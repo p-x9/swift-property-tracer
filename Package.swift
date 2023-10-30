@@ -1,8 +1,6 @@
 // swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
-import CompilerPluginSupport
 
 let package = Package(
     name: "PropertyTracer",
@@ -19,27 +17,14 @@ let package = Package(
             targets: ["PropertyTracer"]
         )
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
-    ],
     targets: [
-        .macro(
-            name: "PropertyTracerMacros",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
-            ]
-        ),
         .target(
             name: "PropertyTracer",
-            dependencies: ["PropertyTracerMacros"]
+            dependencies: []
         ),
         .testTarget(
             name: "PropertyTracerTests",
-            dependencies: [
-                "PropertyTracerMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-            ]
+            dependencies: []
         ),
     ]
 )
