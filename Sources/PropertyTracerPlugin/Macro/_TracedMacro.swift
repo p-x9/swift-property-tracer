@@ -80,7 +80,7 @@ extension _TracedMacro: AccessorMacro {
             return []
         }
 
-        guard let identifier = binding.pattern.as(IdentifierPatternSyntax.self) else {
+        guard let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.trimmed else {
             return []
         }
 
@@ -109,11 +109,13 @@ extension _TracedMacro: AccessorMacro {
             """
             get {
                 _\(identifier).setParent(self)
+                _\(identifier).tracedKeyPath.value = \\Self._\(identifier)
                 \(raw: setCallback)
                 return _\(identifier).wrappedValue
             }
             set {
                 _\(identifier).setParent(self)
+                _\(identifier).tracedKeyPath.value = \\Self._\(identifier)
                 \(raw: setCallback)
                 _\(identifier).wrappedValue = newValue
             }

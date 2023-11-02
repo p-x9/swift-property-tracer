@@ -12,7 +12,7 @@ import PropertyTracerSupport
 @attached(memberAttribute)
 @attached(member, names: arbitrary)
 public macro PropertyTraced(
-    _ callback: ((AnyPropertyAccess) -> Void)? = nil
+    _ callback: ((AnyPropertyAccess, AnyKeyPath) -> Void)? = nil
 ) = #externalMacro(
     module: "PropertyTracerPlugin",
     type: "PropertyTracerMacro"
@@ -20,7 +20,7 @@ public macro PropertyTraced(
 
 @attached(accessor, names: named(init), named(get), named(set))
 public macro _Traced(
-    _ callback: ((AnyPropertyAccess) -> Void)? = nil
+    _ callback: ((AnyPropertyAccess, AnyKeyPath) -> Void)? = nil
 ) = #externalMacro(
     module: "PropertyTracerPlugin",
     type: "_TracedMacro"

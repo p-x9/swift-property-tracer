@@ -7,6 +7,9 @@ import PropertyTracerSupport
 /// It captures the call stack at the point of access to provide contextual information.
 @propertyWrapper
 public struct Traced<P, V> {
+    public typealias Callback = (_ access: PropertyAccess<P, V>, _ tracedKeyPath: TracedKeyPath?) -> Void
+    public typealias TracedKeyPath = KeyPath<P, Traced<P, V>>
+
     @_optimize(none)
     public var wrappedValue: V {
         get {
@@ -45,10 +48,25 @@ public struct Traced<P, V> {
 
     private let ref: Ref<V>
 
+    /// Parent object
+    ///
+    /// Use closure so that the most recent values can be retrieved.
+    /// Use `Ref` to hold references.
+    ///
+    /// Do not make strong references when the parent object's type P is a reference type.
+    ///  ```swift
+    ///   parent.value = { [weak xxx] xxx }
+    ///  ```
     public let parent: Ref<() -> P?>
+
+    /// KeyPath of target property for parent
     public let keyPath: Ref<KeyPath<P, V>?>
 
-    public var callback: Ref<((PropertyAccess<P, V>) -> Void)?>
+    /// KeyPath of `Traced` wrap property of  target property for parent.
+    public let tracedKeyPath: Ref<TracedKeyPath?>
+
+    /// callback when accessing target property
+    public var callback: Ref<Callback?>
 
     private let isTraced: Ref<Bool> = .init(value: true)
 
@@ -64,11 +82,13 @@ public struct Traced<P, V> {
         wrappedValue: V,
         parent: @autoclosure @escaping () -> P? = nil,
         keyPath: KeyPath<P, V>? = nil,
-        _ callback: ((PropertyAccess<P, V>) -> Void)? = nil
+        tracedKeyPath: TracedKeyPath? = nil,
+        _ callback: Callback? = nil
     ) {
         ref = .init(value: wrappedValue)
         self.parent = .init(value: parent)
         self.keyPath = .init(value: keyPath)
+        self.tracedKeyPath = .init(value: tracedKeyPath)
         self.callback = .init(value: callback)
     }
 
@@ -101,7 +121,7 @@ public struct Traced<P, V> {
 //            print("         parent", parent)
 //        }
 
-        callback.value?(access)
+        callback.value?(access, tracedKeyPath.value)
     }
 }
 
@@ -122,12 +142,14 @@ extension Traced {
         self.parent.value = { parent }
     }
 
+    public typealias AnyCallback = (_ access: AnyPropertyAccess, _ tracedKeyPath: AnyKeyPath?) -> Void
+
     /// Sets the callback to be invoked on property access.
     ///
     /// - Parameter callBack: The callback.
-    public func setCallback(_ callBack: ((AnyPropertyAccess) -> Void)?) {
+    public func setCallback(_ callBack: AnyCallback?) {
         self.callback.value = {
-            callBack?(AnyPropertyAccess($0))
+            callBack?(AnyPropertyAccess($0), $1)
         }
     }
 }
@@ -158,11 +180,12 @@ extension Traced {
     /// Type P automatically specifies Any.
     public init(
         wrappedValue: V,
-        _ callback: ((PropertyAccess<P, V>) -> Void)? = nil
+        _ callback: Callback? = nil
     ) where P == Any {
         ref = .init(value: wrappedValue)
         self.parent = .init(value: { nil })
         self.keyPath = .init(value: nil)
+        self.tracedKeyPath = .init(value: nil)
         self.callback = .init(value: callback)
     }
 }
