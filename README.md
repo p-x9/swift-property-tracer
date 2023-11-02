@@ -43,7 +43,7 @@ For example, when we define:
 ```swift
 struct Item {
     @Traced(trace(_:_:))
-    var title
+    var title = "hello"
 }
 
 func trace<P, V>(_ access: PropertyAccess<P, V>, _ tracedKeyPath: KeyPath<P, Traced<P, V>>?) {
