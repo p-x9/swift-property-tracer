@@ -1,6 +1,7 @@
 // swift-tools-version: 5.9
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
     name: "PropertyTracer",
@@ -17,14 +18,37 @@ let package = Package(
             targets: ["PropertyTracer"]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-syntax.git",
+                 from: "509.0.0")
+    ],
     targets: [
         .target(
             name: "PropertyTracer",
-            dependencies: []
+            dependencies: [
+                "PropertyTracerSupport",
+                "PropertyTracerPlugin"
+            ]
+        ),
+        .target(
+            name: "PropertyTracerSupport"
+        ),
+        .macro(
+            name: "PropertyTracerPlugin",
+            dependencies: [
+                "PropertyTracerSupport",
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftParserDiagnostics", package: "swift-syntax")
+            ]
         ),
         .testTarget(
             name: "PropertyTracerTests",
-            dependencies: []
+            dependencies: [
+                "PropertyTracer"
+            ]
         ),
     ]
 )
