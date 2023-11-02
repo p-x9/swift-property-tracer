@@ -10,6 +10,9 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+/// This macro is added to the member properties of its type declaration primarily by the `@PropertyAccess` macro.
+///
+/// Implement Init, get, set accessors
 struct _TracedMacro {
     struct Arguments {
         let callbackExpr: ExprSyntax
@@ -81,7 +84,7 @@ extension _TracedMacro: AccessorMacro {
             return []
         }
 
-        guard let type = binding.typeAnnotation?.type.trimmed else {
+        guard binding.typeAnnotation?.type.trimmed != nil else {
             context.diagnose(
                 PropertyTracerMacroDiagnostic.specifyTypeExplicitly.diagnose(at: declaration)
             )

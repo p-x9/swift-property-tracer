@@ -10,6 +10,10 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+/// This macro is added to the class, struct, and actor declarations.
+/// It traces access to the properties to which it belongs.
+///
+/// Does not apply to properties for which the `Traced` property wrapper or the `NoTraced` macro is used.
 public struct PropertyTracerMacro {
     struct Arguments {
         let callbackExpr: ExprSyntax

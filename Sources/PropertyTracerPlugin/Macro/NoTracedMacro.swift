@@ -10,6 +10,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
+/// This macro is a mark for members of the type to which the `@PropertyTraced` macro is added that should not be traced
 struct NoTracedMacro {}
 
 extension NoTracedMacro: PeerMacro {

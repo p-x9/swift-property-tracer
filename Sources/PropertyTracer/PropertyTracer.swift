@@ -1,6 +1,10 @@
 import Foundation
 import PropertyTracerSupport
 
+/// A property wrapper for tracing access to a property.
+///
+/// This wrapper logs access to a property and can invoke a callback whenever the property is accessed.
+/// It captures the call stack at the point of access to provide contextual information.
 @propertyWrapper
 public struct Traced<P, V> {
     @_optimize(none)
@@ -42,6 +46,14 @@ public struct Traced<P, V> {
 
     public var callback: Ref<((PropertyAccess<P, V>) -> Void)?>
 
+
+    /// Creates a new traced property.
+    ///
+    /// - Parameters:
+    ///   - wrappedValue: The initial value of the property.
+    ///   - parent: An autoclosure that returns the parent object, if any.
+    ///   - keyPath: An autoclosure that returns the key path to the property, if any.
+    ///   - callback: A callback to invoke whenever the property is accessed.
     public init(
         wrappedValue: V,
         parent: @autoclosure @escaping () -> P? = nil,
@@ -54,6 +66,11 @@ public struct Traced<P, V> {
         self.callback = .init(value: callback)
     }
 
+    /// Handles the property access, logging the access and invoking the callback if set.
+    ///
+    /// - Parameters:
+    ///   - accessor: The type of access (getter or setter).
+    ///   - callStackInfos: The call stack at the point of access.
     func handlePropertyAccess(
         accessor: PropertyAccess<P, V>.Accessor,
         callStackInfos: [CallStackInfo]
@@ -83,16 +100,25 @@ public struct Traced<P, V> {
 }
 
 extension Traced where P: AnyObject {
+    /// Sets the parent object for weak referencing.
+    ///
+    /// - Parameter parent: The parent object.
     public func setParent(_ parent: P) {
         self.parent.value = { [weak parent] in parent }
     }
 }
 extension Traced {
+    /// Sets the parent object.
+    ///
+    /// - Parameter parent: The parent object.
     @_disfavoredOverload
     public func setParent(_ parent: P) {
         self.parent.value = { parent }
     }
 
+    /// Sets the callback to be invoked on property access.
+    ///
+    /// - Parameter callBack: The callback.
     public func setCallback(_ callBack: ((AnyPropertyAccess) -> Void)?) {
         self.callback.value = {
             callBack?(AnyPropertyAccess($0))
@@ -100,9 +126,15 @@ extension Traced {
     }
 }
 
+/// A reference-holding class.
 public class Ref<V> {
+
+    /// The value held by the reference.
     public var value: V
 
+    /// Creates a new reference.
+    ///
+    /// - Parameter value: The initial value.
     public init(value: V) {
         self.value = value
     }
@@ -110,6 +142,14 @@ public class Ref<V> {
 
 
 extension Traced {
+    // Creates a new traced property with a callback, without requiring a parent or key path.
+    ///
+    /// - Parameters:
+    ///   - wrappedValue: The initial value of the property.
+    ///   - callback: A callback to invoke whenever the property is accessed.
+    ///
+    /// Used for global variables, etc.
+    /// Type P automatically specifies Any.
     public init(
         wrappedValue: V,
         _ callback: ((PropertyAccess<P, V>) -> Void)? = nil

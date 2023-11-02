@@ -11,6 +11,9 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 extension PatternBindingSyntax {
+    /// The setter accessor declaration of the pattern binding, if it exists.
+    ///
+    /// Assignments can also be used to add a setter to the accessor of pattern bindings.
     public var setter: AccessorDeclSyntax? {
         get {
             guard let accessors = accessorBlock?.accessors,
@@ -28,6 +31,9 @@ extension PatternBindingSyntax {
         }
     }
 
+    /// The getter accessor declaration of the pattern binding, if it exists.
+    ///
+    ///　Assignments can also be used to add a getter to the accessor of pattern bindings.
     public var getter: AccessorDeclSyntax? {
         get {
             switch accessorBlock?.accessors {
@@ -87,6 +93,7 @@ extension PatternBindingSyntax {
         }
     }
 
+    /// A Boolean value indicating whether the pattern binding is get-only property.
     public var isGetOnly: Bool {
         if initializer != nil {
             return false
@@ -104,6 +111,9 @@ extension PatternBindingSyntax {
 }
 
 extension PatternBindingSyntax {
+    /// The `willSet` accessor declaration of the pattern binding, if it exists.
+    ///
+    ///　Assignments can also be used to add a wllSet to the accessor of pattern bindings.
     public var willSet: AccessorDeclSyntax? {
         get {
             if let accessors = accessorBlock?.accessors,
@@ -120,6 +130,9 @@ extension PatternBindingSyntax {
         }
     }
 
+    /// The `didSet` accessor declaration of the pattern binding, if it exists.
+    ///
+    ///　Assignments can also be used to add a didSet to the accessor of pattern bindings.
     public var didSet: AccessorDeclSyntax? {
         get {
             if let accessors = accessorBlock?.accessors,
@@ -183,7 +196,8 @@ extension PatternBindingSyntax {
 }
 
 extension PatternBindingSyntax {
-    var isStored: Bool {
+    /// A Boolean value indicating whether the pattern binding is a stored property.
+    public var isStored: Bool {
         setter == nil && getter == nil
     }
 }

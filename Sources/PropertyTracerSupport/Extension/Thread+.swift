@@ -9,10 +9,18 @@
 import Foundation
 
 extension Thread {
+    /// Retrieves the dynamic linking information for a given set of addresses.
+    ///
+    /// - Parameter addresses: An array of addresses for which to retrieve dynamic linking information.
+    /// - Returns: An array of `Dl_info` structures containing the dynamic linking informat
     package class func callStackDLInfos(addresses: [NSNumber]) -> [Dl_info] {
         addresses.compactMap { symbolInfo(for: $0.uintValue) }
     }
 
+    /// Retrieves the call stack information for a given set of addresses.
+    ///
+    /// - Parameter addresses: An array of addresses for which to retrieve call stack information.
+    /// - Returns: An array of `CallStackInfo` structures containing the call stack information for each address.
     package class func callStackInfos(addresses: [NSNumber]) -> [CallStackInfo] {
         addresses
             .lazy
@@ -33,6 +41,12 @@ extension Thread {
             }
     }
 
+    /// Retrieves the symbol names for a given set of addresses.
+    ///
+    /// - Parameter addresses: An array of addresses for which to retrieve symbol names.
+    /// - Returns: An array of strings containing the symbol names for each address.
+    ///
+    /// Symbol names are returned demangled
     package class func callStackNames(addresses: [NSNumber]) -> [String] {
         Self.callStackDLInfos(addresses: addresses).compactMap {
             if let cname = $0.dli_sname {
