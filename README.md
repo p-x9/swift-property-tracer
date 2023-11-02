@@ -22,6 +22,10 @@ The following information can be obtained:
 - KeyPath
 - ...
 
+> **Warning**
+> It does not work correctly depending on the setting of swift's optimization flag.
+> With the default settings, only Debug builds work.
+
 ## Table of Contents
 
 - [PropertyTracer](#propertytracer)
