@@ -147,3 +147,14 @@ public struct AnyPropertyAccess {
         self.keyPath = access.keyPath
     }
 }
+
+extension AnyPropertyAccess.Accessor: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .getter(let v):
+            return "getter(\(type(of: v)): \(String(describing: v))"
+        case .setter(let changes):
+            return "setter(\(type(of: changes.newValue)): \(String(describing: changes.currentValue)) => \(String(describing: changes.newValue))"
+        }
+    }
+}
