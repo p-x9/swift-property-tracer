@@ -10,28 +10,32 @@ public struct Traced<P, V> {
     @_optimize(none)
     public var wrappedValue: V {
         get {
-            let infos = Thread.callStackInfos(addresses: Thread.callStackReturnAddresses)
-            // [0]: PropertyTracer.Traced.wrappedValue.getter
-            // [1]: XXXX.getter
+            if isTraced.value {
+                let infos = Thread.callStackInfos(addresses: Thread.callStackReturnAddresses)
+                // [0]: PropertyTracer.Traced.wrappedValue.getter
+                // [1]: XXXX.getter
 
-            handlePropertyAccess(
-                accessor: .getter(ref.value),
-                callStackInfos: infos
-            )
+                handlePropertyAccess(
+                    accessor: .getter(ref.value),
+                    callStackInfos: infos
+                )
+            }
 
             return ref.value
         }
         nonmutating set {
-            let infos = Thread.callStackInfos(addresses: Thread.callStackReturnAddresses)
-            // [0]: PropertyTracer.Traced.wrappedValue.setter
-            // [1]: XXXX.setter
+            if isTraced.value {
+                let infos = Thread.callStackInfos(addresses: Thread.callStackReturnAddresses)
+                // [0]: PropertyTracer.Traced.wrappedValue.setter
+                // [1]: XXXX.setter
 
-            handlePropertyAccess(
-                accessor: .setter(
-                    .init(currentValue: ref.value, newValue: newValue)
-                ),
-                callStackInfos: infos
-            )
+                handlePropertyAccess(
+                    accessor: .setter(
+                        .init(currentValue: ref.value, newValue: newValue)
+                    ),
+                    callStackInfos: infos
+                )
+            }
 
             ref.value = newValue
         }
@@ -42,9 +46,11 @@ public struct Traced<P, V> {
     private let ref: Ref<V>
 
     public let parent: Ref<() -> P?>
-    public let keyPath: Ref<() -> KeyPath<P, V>?>
+    public let keyPath: Ref<KeyPath<P, V>?>
 
     public var callback: Ref<((PropertyAccess<P, V>) -> Void)?>
+
+    private let isTraced: Ref<Bool> = .init(value: true)
 
 
     /// Creates a new traced property.
@@ -57,7 +63,7 @@ public struct Traced<P, V> {
     public init(
         wrappedValue: V,
         parent: @autoclosure @escaping () -> P? = nil,
-        keyPath: @autoclosure @escaping () -> KeyPath<P, V>? = nil,
+        keyPath: KeyPath<P, V>? = nil,
         _ callback: ((PropertyAccess<P, V>) -> Void)? = nil
     ) {
         ref = .init(value: wrappedValue)
@@ -82,18 +88,18 @@ public struct Traced<P, V> {
             accessor: accessor,
             callStackInfo: info,
             parent: parent.value(),
-            keyPath: keyPath.value()
+            keyPath: keyPath.value
         )
 
-        print("[Access] ", terminator: "")
-        if let keyPath = keyPath.value() {
-            print("\(keyPath) ", terminator: "")
-        }
-        print("\(accessor.description)")
-        print("         called from:", info.demangledSymbolName ?? "unknown")
-        if let parent = parent.value() {
-            print("         parent", parent)
-        }
+//        print("[Access] ", terminator: "")
+//        if let keyPath = keyPath.value() {
+//            print("\(keyPath) ", terminator: "")
+//        }
+//        print("\(accessor.description)")
+//        print("         called from:", info.demangledSymbolName ?? "unknown")
+//        if let parent = parent.value() {
+//            print("         parent", parent)
+//        }
 
         callback.value?(access)
     }
@@ -156,8 +162,49 @@ extension Traced {
     ) where P == Any {
         ref = .init(value: wrappedValue)
         self.parent = .init(value: { nil })
-        self.keyPath = .init(value: { nil })
+        self.keyPath = .init(value: nil)
         self.callback = .init(value: callback)
     }
 }
 
+extension Traced {
+    /// Enable Tracing
+    public func traced() {
+        isTraced.value = true
+    }
+
+    /// Disable tracing
+    public func untraced() {
+        isTraced.value = false
+    }
+}
+
+extension Traced {
+    /// Get value without tracing
+    public func untracedGet() -> V {
+        let isTraced = isTraced.value
+
+        untraced()
+
+        let value = wrappedValue
+
+        if isTraced {
+            traced()
+        }
+
+        return value
+    }
+
+    /// Set value without tracing
+    public func untracedSet(_ newValue: V) {
+        let isTraced = isTraced.value
+
+        untraced()
+
+        wrappedValue = newValue
+
+        if isTraced {
+            traced()
+        }
+    }
+}
