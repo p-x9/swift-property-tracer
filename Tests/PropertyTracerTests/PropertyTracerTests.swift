@@ -5,6 +5,7 @@ import PropertyTracer
 final class PropertyTracerTests: XCTestCase {
     @PropertyTraced(trace(_:_:))
     class ClassType1 {
+        static let staticVar = ""
         var value1: String = "こんにちは"
         var value2: Int = 12
 
@@ -20,6 +21,7 @@ final class PropertyTracerTests: XCTestCase {
 
     @PropertyTraced(trace(_:_:))
     struct StructType1 {
+        static let staticVar = ""
         var value1: String = "こんにちは"
         var value2: Int = 12
 

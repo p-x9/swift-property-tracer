@@ -56,6 +56,7 @@ extension PropertyTracerMacro: MemberAttributeMacro {
     ) throws -> [AttributeSyntax] {
         guard let variableDecl = member.as(VariableDeclSyntax.self),
               variableDecl.isVar,
+              variableDecl.isInstance,
               let binding = variableDecl.bindings.first,
               binding.isStored,
               binding.typeAnnotation != nil else {
@@ -109,6 +110,7 @@ extension PropertyTracerMacro: MemberMacro {
             .lazy
             .compactMap { $0.decl.as(VariableDeclSyntax.self) }
             .filter { $0.isVar }
+            .filter { $0.isInstance }
             .filter { $0.bindings.count == 1 }
             .filter {
                 !$0.attributes.contains { element in
