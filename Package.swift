@@ -47,7 +47,8 @@ let package = Package(
         .testTarget(
             name: "PropertyTracerTests",
             dependencies: [
-                "PropertyTracer"
+                "PropertyTracer",
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ]
         ),
     ]
